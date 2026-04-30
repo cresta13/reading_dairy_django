@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Удалить «{{ book.title }}» — Читательский дневник{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow border-danger">
+      <div class="card-header bg-danger text-white">
+        <h4 class="mb-0">🗑 Удаление книги</h4>
+      </div>
+      <div class="card-body p-4 text-center">
+        <p class="fs-5 mb-1">Вы уверены, что хотите удалить книгу</p>
+        <p class="fs-4 fw-bold" style="color:#2d1f14;">«{{ book.title }}»</p>
+        <p class="text-muted">{{ book.author }}</p>
+        <p class="text-danger small">Это действие невозможно отменить.</p>
+
+        <div class="d-flex gap-3 justify-content-center mt-4">
+          <a href="{% url 'diary:book_detail' book.pk %}"
+             class="btn btn-outline-secondary btn-lg">Отмена</a>
+          <form method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-lg">Да, удалить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

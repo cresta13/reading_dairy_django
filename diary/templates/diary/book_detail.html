@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} — Читательский дневник{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'diary:index' %}">Главная</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'diary:about' %}">Все книги</a></li>
+    <li class="breadcrumb-item active">{{ book.title|truncatechars:40 }}</li>
+  </ol>
+</nav>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow">
+      <div class="card-header py-3" style="background:#2d1f14; color:#f5e6d0;">
+        <h2 class="mb-0">{{ book.title }}</h2>
+        <p class="mb-0 opacity-75">{{ book.author }}</p>
+      </div>
+      <div class="card-body p-4">
+
+        <div class="row g-3 mb-4">
+          <div class="col-sm-4">
+            <div class="p-3 rounded text-center" style="background:#fff8f0;">
+              <div class="text-muted small">Страниц</div>
+              <div class="fs-4 fw-bold" style="color:#8b5e3c;">{{ book.pages }}</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="p-3 rounded text-center" style="background:#fff8f0;">
+              <div class="text-muted small">Оценка</div>
+              <div class="fs-4 fw-bold text-warning">{{ book.stars_display }}</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="p-3 rounded text-center" style="background:#fff8f0;">
+              <div class="text-muted small">Год прочтения</div>
+              <div class="fs-4 fw-bold" style="color:#8b5e3c;">{{ book.year_read|default:"—" }}</div>
+            </div>
+          </div>
+        </div>
+
+        {% if book.notes %}
+        <div class="p-4 rounded mb-3" style="background:#fffbf5; border-left:4px solid #8b5e3c;">
+          <h6 class="text-muted mb-2">📝 Заметки / цитата</h6>
+          <p class="mb-0 fst-italic">{{ book.notes }}</p>
+        </div>
+        {% endif %}
+
+        <small class="text-muted">Добавлено: {{ book.created_at|date:"d.m.Y H:i" }}</small>
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2 justify-content-end">
+        <a href="{% url 'diary:about' %}" class="btn btn-outline-secondary">← Назад</a>
+        <a href="{% url 'diary:book_edit' book.pk %}" class="btn btn-diary">✏️ Редактировать</a>
+        <a href="{% url 'diary:book_delete' book.pk %}" class="btn btn-outline-danger">🗑 Удалить</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+/* =====================================================
+   Читательский дневник — кастомные стили
+   ===================================================== */
+
+/* Кнопка в фирменном цвете дневника */
+.btn-diary {
+  background-color: #8b5e3c;
+  border-color: #8b5e3c;
+  color: #fff;
+}
+
+.btn-diary:hover,
+.btn-diary:focus {
+  background-color: #6e4a2f;
+  border-color: #6e4a2f;
+  color: #fff;
+}
+
+/* Карточки книг */
+.book-card {
+  border: 1px solid #e8ddd4;
+  border-radius: 8px;
+}
+
+.book-card:hover {
+  border-color: #8b5e3c;
+}
+
+/* Карточки со статистикой */
+.stat-card {
+  border-left: 4px solid #8b5e3c !important;
+  border-radius: 6px;
+}
+
+/* Breadcrumbs */
+.breadcrumb-item a {
+  color: #8b5e3c;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  text-decoration: underline;
+}
+
+/* Форма — поля с ошибками */
+.is-invalid {
+  border-color: #dc3545;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875em;
+}

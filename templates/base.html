@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Читательский дневник{% endblock %}</title>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        crossorigin="anonymous" />
+  <link rel="stylesheet" href="{% static 'css/diary.css' %}" />
+  <style>
+    body { background: #faf8f5; }
+    .navbar-brand { font-family: Georgia, serif; font-size: 1.4rem; }
+    .star-filled { color: #f5c518; }
+    .star-empty  { color: #ccc; }
+    .book-card { transition: transform .15s, box-shadow .15s; }
+    .book-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .stat-card { border-left: 4px solid #8b5e3c; }
+    footer { background: #2d1f14; color: #c9a87a; }
+    footer a { color: #e8c99a; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .btn-diary { background: #8b5e3c; border-color: #8b5e3c; color: #fff; }
+    .btn-diary:hover { background: #6e4a2f; border-color: #6e4a2f; color: #fff; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark" style="background:#2d1f14;">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'diary:index' %}">📖 Читательский дневник</a>
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item">
+          <a class="nav-link {% block nav_home %}{% endblock %}"
+             href="{% url 'diary:index' %}">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% block nav_about %}{% endblock %}"
+             href="{% url 'diary:about' %}">Все книги</a>
+        </li>
+        <li class="nav-item ms-2">
+          <a class="btn btn-sm btn-outline-warning px-3"
+             href="{% url 'diary:book_add' %}">+ Добавить книгу</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+  <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<main class="container my-4">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="py-4 mt-5">
+  <div class="container text-center">
+    <p class="mb-1">📚 Читательский дневник &mdash; Django-проект</p>
+    <small>
+      <a href="{% url 'diary:index' %}">Главная</a> &middot;
+      <a href="{% url 'diary:about' %}">Все книги</a> &middot;
+      <a href="/admin/">Админка</a>
+    </small>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

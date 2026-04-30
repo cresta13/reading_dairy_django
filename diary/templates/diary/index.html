@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Читательский дневник — Главная{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<div class="p-5 mb-4 rounded-3" style="background: linear-gradient(135deg,#2d1f14 0%,#5c3a1e 100%); color:#f5e6d0;">
+  <div class="container-fluid py-3">
+    <h1 class="display-5 fw-bold">📖 Читательский дневник</h1>
+    <p class="col-md-8 fs-5 opacity-75">Личный дневник прочитанных книг — оценки, цитаты, впечатления.</p>
+    <a class="btn btn-warning btn-lg me-2" href="{% url 'diary:book_add' %}">+ Добавить книгу</a>
+    <a class="btn btn-outline-light btn-lg" href="{% url 'diary:about' %}">Все книги</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-5">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card h-100 stat-card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Всего книг</div>
+        <div class="display-6 fw-bold" style="color:#8b5e3c;">{{ stats.total_books }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card h-100 stat-card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Всего страниц</div>
+        <div class="display-6 fw-bold" style="color:#8b5e3c;">{{ stats.total_pages }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card h-100 stat-card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Книг в этом году</div>
+        <div class="display-6 fw-bold" style="color:#8b5e3c;">{{ stats.books_this_year }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card h-100 stat-card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Средняя оценка</div>
+        <div class="display-6 fw-bold" style="color:#8b5e3c;">
+          {% if stats.avg_rating %}{{ stats.avg_rating }} ★{% else %}—{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if stats.current_book %}
+<div class="alert mb-4" style="background:#fff8f0;border-left:4px solid #8b5e3c;">
+  📌 <strong>Последняя добавленная:</strong> {{ stats.current_book }}
+</div>
+{% endif %}
+
+<h2 class="mb-4" style="color:#2d1f14;">Прочитанные книги</h2>
+
+{% if books %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  {% for book in books %}
+  <div class="col">
+    <div class="card h-100 book-card shadow-sm">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title" style="color:#2d1f14;">{{ book.title }}</h5>
+        <p class="card-subtitle mb-2 text-muted">{{ book.author }}</p>
+        <div class="mt-auto">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-warning fs-5">{{ book.stars_display }}</span>
+            <span class="badge bg-secondary">{{ book.pages }} стр.</span>
+          </div>
+          {% if book.year_read %}<small class="text-muted">Год: {{ book.year_read }}</small>{% endif %}
+          {% if book.notes %}
+          <p class="card-text mt-2 fst-italic text-muted small">{{ book.notes|truncatechars:100 }}</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{% url 'diary:book_detail' book.pk %}" class="btn btn-sm btn-diary flex-fill">Подробнее</a>
+        <a href="{% url 'diary:book_edit' book.pk %}" class="btn btn-sm btn-outline-secondary">✏️</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+  <p class="fs-4 text-muted">Дневник пока пуст.</p>
+  <a href="{% url 'diary:book_add' %}" class="btn btn-diary btn-lg">Добавить первую книгу</a>
+</div>
+{% endif %}
+{% endblock %}
