@@ -1,8 +1,5 @@
 """
 URL-маршруты приложения «Читательский дневник».
-
-Все маршруты подключаются с пространством имён app_name = "diary",
-что позволяет использовать {% url 'diary:index' %} в шаблонах.
 """
 
 from django.urls import path
@@ -15,15 +12,15 @@ urlpatterns = [
     # Главная страница — статистика + список книг
     path("", views.index, name="index"),
     # Страница «О дневнике»
-    path("about/", views.about, name="about"),
+    path("about/", views.BookListView.as_view(), name="about"),
     # Список всех книг (отдельная страница)
-    path("books/", views.about, name="book_list"),
+    path("books/", views.BookListView.as_view(), name="book_list"),
     # Добавить новую книгу
-    path("books/add/", views.book_add, name="book_add"),
+    path("books/add/", views.BookCreateView.as_view(), name="book_add"),
     # Детальная страница книги
-    path("books/<int:pk>/", views.book_detail, name="book_detail"),
+    path("books/<int:pk>/", views.BookDetailView.as_view(), name="book_detail"),
     # Редактировать книгу
-    path("books/<int:pk>/edit/", views.book_edit, name="book_edit"),
+    path("books/<int:pk>/edit/", views.BookUpdateView.as_view(), name="book_edit"),
     # Удалить книгу
-    path("books/<int:pk>/delete/", views.book_delete, name="book_delete"),
+    path("books/<int:pk>/delete/", views.BookDeleteView.as_view(), name="book_delete"),
 ]
