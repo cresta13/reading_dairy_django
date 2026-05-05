@@ -13,13 +13,21 @@
 """
 
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, QuerySet, Sum
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 
 from .forms import BookForm
 from .models import Book
-
 
 # ---------------------------------------------------------------------------
 # Вспомогательные функции
@@ -59,7 +67,9 @@ def _build_stats(queryset: QuerySet) -> dict:
         total_rating = sum(b.rating for b in rated_books)
         avg_rating = round(total_rating / rated_books.count(), 1)
 
-    current_book = queryset.order_by("-created_at").values_list("title", flat=True).first()
+    current_book = (
+        queryset.order_by("-created_at").values_list("title", flat=True).first()
+    )
 
     return {
         "total_books": aggregated["total_books"] or 0,
@@ -91,80 +101,66 @@ def index(request: HttpRequest) -> HttpResponse:
     )
 
 
-def about(request: HttpRequest) -> HttpResponse:
-    """Страница «О дневнике» с полным списком книг."""
-    books = Book.objects.all()
-    return render(request, "diary/about.html", {"books": books})
+# ДОБАВИТЬ в конец файла:
 
 
-def book_detail(request: HttpRequest, pk: int) -> HttpResponse:
-    """Детальная страница отдельной книги."""
-    book = get_object_or_404(Book, pk=pk)
-    return render(request, "diary/book_detail.html", {"book": book})
+class BookListView(ListView):
+    """Список всех книг в виде таблицы."""
+
+    model = Book
+    template_name = "diary/about.html"
+    context_object_name = "books"
+    ordering = ["-created_at"]
 
 
-# ---------------------------------------------------------------------------
-# CRUD: добавление и редактирование
-# ---------------------------------------------------------------------------
+class BookDetailView(DetailView):
+    """Детальная страница книги."""
+
+    model = Book
+    template_name = "diary/book_detail.html"
+    context_object_name = "book"
 
 
-def book_add(request: HttpRequest) -> HttpResponse:
-    """
-    Форма добавления новой книги.
+class BookCreateView(SuccessMessageMixin, CreateView):
+    """Форма добавления новой книги."""
 
-    GET  — отображает пустую форму.
-    POST — валидирует и сохраняет книгу, затем редиректит на список.
-    """
-    if request.method == "POST":
-        form = BookForm(request.POST)
-        if form.is_valid():
-            book = form.save()
-            messages.success(request, f'Книга «{book.title}» успешно добавлена!')
-            return redirect("diary:index")
-    else:
-        form = BookForm()
+    model = Book
+    form_class = BookForm
+    template_name = "diary/book_form.html"
+    success_url = reverse_lazy("diary:index")
+    success_message = "Книга «%(title)s» успешно добавлена!"
 
-    return render(request, "diary/book_form.html", {"form": form, "action": "Добавить"})
+    def get_context_data(self, **kwargs: object) -> dict:
+        ctx = super().get_context_data(**kwargs)
+        ctx["action"] = "Добавить"
+        return ctx
 
 
-def book_edit(request: HttpRequest, pk: int) -> HttpResponse:
-    """
-    Форма редактирования существующей книги.
+class BookUpdateView(SuccessMessageMixin, UpdateView):
+    """Форма редактирования существующей книги."""
 
-    GET  — отображает форму с текущими данными.
-    POST — валидирует и сохраняет изменения.
-    """
-    book = get_object_or_404(Book, pk=pk)
+    model = Book
+    form_class = BookForm
+    template_name = "diary/book_form.html"
+    success_message = "Книга «%(title)s» успешно обновлена!"
 
-    if request.method == "POST":
-        form = BookForm(request.POST, instance=book)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Книга «{book.title}» успешно обновлена!')
-            return redirect("diary:book_detail", pk=book.pk)
-    else:
-        form = BookForm(instance=book)
+    def get_success_url(self) -> str:
+        return reverse_lazy("diary:book_detail", kwargs={"pk": self.object.pk})
 
-    return render(
-        request,
-        "diary/book_form.html",
-        {"form": form, "book": book, "action": "Сохранить изменения"},
-    )
+    def get_context_data(self, **kwargs: object) -> dict:
+        ctx = super().get_context_data(**kwargs)
+        ctx["action"] = "Сохранить изменения"
+        return ctx
 
 
-def book_delete(request: HttpRequest, pk: int) -> HttpResponse:
-    """
-    Удаление книги.
+class BookDeleteView(DeleteView):
+    """Подтверждение и удаление книги."""
 
-    GET  — страница подтверждения удаления.
-    POST — выполняет удаление и редиректит на главную.
-    """
-    book = get_object_or_404(Book, pk=pk)
+    model = Book
+    template_name = "diary/book_confirm_delete.html"
+    context_object_name = "book"
+    success_url = reverse_lazy("diary:index")
 
-    if request.method == "POST":
-        title = book.title
-        book.delete()
-        messages.success(request, f'Книга «{title}» удалена.')
-        return redirect("diary:index")
-
-    return render(request, "diary/book_confirm_delete.html", {"book": book})
+    def form_valid(self, form):  # type: ignore[override]
+        messages.success(self.request, f"Книга «{self.object.title}» удалена.")
+        return super().form_valid(form)

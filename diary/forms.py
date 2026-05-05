@@ -38,9 +38,7 @@ class BookForm(forms.ModelForm):
             "author": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Имя автора"}
             ),
-            "pages": forms.NumberInput(
-                attrs={"class": "form-control", "min": 1}
-            ),
+            "pages": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
             "year_read": forms.NumberInput(
                 attrs={"class": "form-control", "min": 1900, "max": 2100}
             ),
