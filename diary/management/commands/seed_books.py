@@ -137,9 +137,7 @@ class Command(BaseCommand):
         created_books = [Book(**data) for data in sample]
         Book.objects.bulk_create(created_books)
 
-        self.stdout.write(
-            self.style.SUCCESS(f"✅ Создано {len(created_books)} книг.")
-        )
+        self.stdout.write(self.style.SUCCESS(f"✅ Создано {len(created_books)} книг."))
 
         for book in Book.objects.order_by("id"):
             self.stdout.write(f"  📚 [{book.pk}] {book}")
