@@ -11,6 +11,8 @@ from django.core.management.base import BaseCommand, CommandParser
 
 from diary.models import Book
 
+from diary.tasks import log_book_created, log_book_deleted
+
 # ---------------------------------------------------------------------------
 # Тестовые данные — те же книги, что были в FastAPI-версии
 # ---------------------------------------------------------------------------
@@ -121,9 +123,13 @@ class Command(BaseCommand):
         count: int | None = options["count"]  # type: ignore[assignment]
 
         if force:
-            deleted, _ = Book.objects.all().delete()
+            # сохраняем данные до удаления
+            books_to_delete = list(Book.objects.all().values("id", "title", "author"))
+            Book.objects.all().delete()
+            for book in books_to_delete:
+                log_book_deleted.delay(book["id"], book["title"], book["author"])
             self.stdout.write(
-                self.style.WARNING(f"Удалено {deleted} существующих книг.")
+                self.style.WARNING(f"Удалено {len(books_to_delete)} существующих книг.")
             )
         elif Book.objects.exists():
             self.stdout.write(
@@ -137,7 +143,12 @@ class Command(BaseCommand):
         created_books = [Book(**data) for data in sample]
         Book.objects.bulk_create(created_books)
 
-        self.stdout.write(self.style.SUCCESS(f"✅ Создано {len(created_books)} книг."))
+        # логируем каждую созданную книгу через Celery
+        for book in Book.objects.order_by("id").filter(
+                title__in=[b["title"] for b in sample]
+        ):
+            log_book_created.delay(book.pk, book.title, book.author, book.pages)
 
-        for book in Book.objects.order_by("id"):
-            self.stdout.write(f"  📚 [{book.pk}] {book}")
+        self.stdout.write(
+            self.style.SUCCESS(f"✅ Создано {len(created_books)} книг.")
+        )

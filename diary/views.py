@@ -29,6 +29,8 @@ from django.views.generic import (
 from .forms import BookForm
 from .models import Book
 
+from .tasks import log_book_created, log_book_deleted, log_book_updated
+
 # ---------------------------------------------------------------------------
 # Вспомогательные функции
 # ---------------------------------------------------------------------------
@@ -130,6 +132,12 @@ class BookCreateView(SuccessMessageMixin, CreateView):
     success_url = reverse_lazy("diary:index")
     success_message = "Книга «%(title)s» успешно добавлена!"
 
+    def form_valid(self, form):  # type: ignore[override]
+        response = super().form_valid(form)
+        book = self.object
+        log_book_created.delay(book.pk, book.title, book.author, book.pages)
+        return response
+
     def get_context_data(self, **kwargs: object) -> dict:
         ctx = super().get_context_data(**kwargs)
         ctx["action"] = "Добавить"
@@ -143,6 +151,12 @@ class BookUpdateView(SuccessMessageMixin, UpdateView):
     form_class = BookForm
     template_name = "diary/book_form.html"
     success_message = "Книга «%(title)s» успешно обновлена!"
+
+    def form_valid(self, form):  # type: ignore[override]
+        response = super().form_valid(form)
+        book = self.object
+        log_book_updated.delay(book.pk, book.title, book.author, book.pages)
+        return response
 
     def get_success_url(self) -> str:
         return reverse_lazy("diary:book_detail", kwargs={"pk": self.object.pk})
@@ -162,5 +176,10 @@ class BookDeleteView(DeleteView):
     success_url = reverse_lazy("diary:index")
 
     def form_valid(self, form):  # type: ignore[override]
-        messages.success(self.request, f"Книга «{self.object.title}» удалена.")
-        return super().form_valid(form)
+        book = self.object
+        # сохраняем данные до удаления — после super() объекта уже нет
+        book_id, title, author = book.pk, book.title, book.author
+        messages.success(self.request, f"Книга «{title}» удалена.")
+        response = super().form_valid(form)
+        log_book_deleted.delay(book_id, title, author)
+        return response
