@@ -10,7 +10,6 @@
 from django.core.management.base import BaseCommand, CommandParser
 
 from diary.models import Book
-
 from diary.tasks import log_book_created, log_book_deleted
 
 # ---------------------------------------------------------------------------
@@ -145,10 +144,8 @@ class Command(BaseCommand):
 
         # логируем каждую созданную книгу через Celery
         for book in Book.objects.order_by("id").filter(
-                title__in=[b["title"] for b in sample]
+            title__in=[b["title"] for b in sample]
         ):
             log_book_created.delay(book.pk, book.title, book.author, book.pages)
 
-        self.stdout.write(
-            self.style.SUCCESS(f"✅ Создано {len(created_books)} книг.")
-        )
+        self.stdout.write(self.style.SUCCESS(f"✅ Создано {len(created_books)} книг."))

@@ -9,11 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from diary.tasks import (
-    log_book_created,
-    log_book_deleted,
-    log_book_updated,
-)
+from diary.tasks import log_book_created, log_book_deleted, log_book_updated
 
 
 @pytest.fixture(autouse=True)

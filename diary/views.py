@@ -18,17 +18,11 @@ from django.db.models import Count, QuerySet, Sum
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import (
-    CreateView,
-    DeleteView,
-    DetailView,
-    ListView,
-    UpdateView,
-)
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
 
 from .forms import BookForm
 from .models import Book
-
 from .tasks import log_book_created, log_book_deleted, log_book_updated
 
 # ---------------------------------------------------------------------------

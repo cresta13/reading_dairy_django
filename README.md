@@ -47,7 +47,7 @@ python manage.py createsuperuser
 
 пароль: maxmaxmax
 
-### 6. Запустить сервер разработки
+### 5. Запустить сервер разработки
 
 ```bash
 python manage.py runserver
@@ -57,69 +57,102 @@ python manage.py runserver
 
 Админка: **http://127.0.0.1:8000/admin/**
 
+### 6. Запустить Redis (нужен Docker или локальная установка)
+
+```bash
+# через Docker
+docker run -d -p 6379:6379 redis:7
+
+# или если Redis установлен локально
+redis-server
+```
+
+### 7. Запустить Celery-воркер (в отдельном терминале)
+
+```bash
+# Linux / macOS
+celery -A reading_diary worker --loglevel=info
+
+# Windows
+celery -A reading_diary worker --loglevel=info --pool=solo
+```
+
+После этого при добавлении/редактировании/удалении книги
+в консоли воркера будут появляться сообщения вида:
+
+```
+[ОБНОВЛЕНА] Книга #150 | «Мастер и Маргарита» — Михаил Булгаков1123 | 4800 стр.
+```
+
+P.S. добавлено логирование на кастомную команду `seed_books`
+
 ---
 
 ## Структура проекта
 
 ```
-reading_diary/                  ← корень проекта
-├── manage.py
-├── db.sqlite3
-├── LICENSE
-├── README.md
-├── .gitignore
-├── pytest.ini
-├── requirements.txt
+reading_dairy_django/                  ← корень проекта Django
+├── manage.py                           # точка входа в Django (runserver, migrate и т.д.)
+├── db.sqlite3                          # локальная база данных SQLite
+├── LICENSE                             # лицензия проекта
+├── README.md                           # описание проекта
+├── .gitignore                          # игнорируемые git файлы
+├── pytest.ini                          # настройки pytest
+├── requirements.txt                    # зависимости проекта
+
 ├── requirements/
-│   ├── base.txt              # Основные зависимости проекта
-│   └── test-or-dev.txt       # Зависимости для разработки и тестов
-│
-├── reading_diary/            # Настройки Django
+│   ├── base.txt                        # основные зависимости (Django, Celery и т.д.)
+│   └── test-or-dev.txt                 # зависимости для разработки и тестирования
+
+├── reading_diary/                      # Django project (конфигурация)
 │   ├── __init__.py
-│   ├── settings.py           # Основные настройки проекта
-│   ├── urls.py               # Корневые маршруты
-│   └── wsgi.py               # WSGI-конфигурация для деплоя
-│
-├── diary/                    # Основное приложение
+│   ├── settings.py                     # настройки Django (DB, Celery, logging и т.д.)
+│   ├── urls.py                         # корневые маршруты проекта
+│   ├── wsgi.py                         # WSGI для деплоя
+│   └── celery.py                       # настройка Celery (Redis broker)
+
+├── diary/                              # основное приложение (бизнес-логика)
 │   ├── __init__.py
-│   ├── admin.py              # Настройка админ-панели
-│   ├── apps.py               # Конфигурация приложения
-│   ├── forms.py              # Django формы (BookForm)
-│   ├── models.py             # Модели данных (Book)
-│   ├── urls.py               # URL-маршруты приложения
-│   ├── views.py              # Представления (логика)
+│   ├── admin.py                        # регистрация моделей в админке
+│   ├── apps.py                         # конфигурация приложения diary
+│   ├── forms.py                        # Django формы (BookForm)
+│   ├── models.py                       # модели (Book)
+│   ├── tasks.py                        # Celery задачи (логирование CRUD)
+│   ├── urls.py                         # маршруты приложения diary
+│   ├── views.py                        # представления (логика страниц)
 │   │
-│   ├── migrations/
+│   ├── migrations/                     # миграции базы данных
 │   │   ├── __init__.py
-│   │   └── 0001_initial.py   # Первая миграция (создание моделей)
+│   │   └── 0001_initial.py             # первая миграция (Book model)
 │   │
-│   ├── management/
+│   ├── management/                     # кастомные Django команды
 │   │   └── commands/
 │   │       ├── __init__.py
-│   │       └── seed_books.py # Кастомная команда заполнения БД
+│   │       └── seed_books.py           # заполнение базы тестовыми данными
 │   │
-│   └── templates/
-│       └── diary/
-│           ├── about.html                # Страница со списком книг
-│           ├── book_confirm_delete.html # Подтверждение удаления
-│           ├── book_detail.html         # Детальная страница книги
-│           ├── book_form.html           # Форма создания/редактирования
-│           └── index.html               # Главная страница
-│
+│   ├── templates/                      # шаблоны приложения diary
+│   │   └── diary/
+│   │       ├── index.html              # главная страница (список книг + статистика)
+│   │       ├── about.html              # страница "О дневнике"
+│   │       ├── book_form.html          # форма создания/редактирования книги
+│   │       ├── book_detail.html        # страница книги
+│   │       └── book_confirm_delete.html # подтверждение удаления
+│   │
+│   └── tests/                          # тесты приложения diary (pytest)
+│       ├── __init__.py
+│       ├── conftest.py                 # фикстуры для тестов
+│       ├── test_admin.py               # тесты админки
+│       ├── test_commands.py            # тесты management commands
+│       ├── test_models.py              # тесты моделей Book
+│       ├── test_views.py               # тесты views
+│       └── test_tasks_logging.py       # тесты Celery задач логирования
+
 ├── templates/
-│   └── base.html            # Базовый шаблон (layout, navbar)
-│
+│   └── base.html                       # базовый шаблон (layout сайта)
+
 ├── static/
 │   └── css/
-│       └── diary.css        # Кастомные стили проекта
-│
-└── tests/
-    ├── __init__.py
-    ├── conftest.py          # Общие фикстуры для тестов
-    ├── test_admin.py        # Тесты админки
-    ├── test_commands.py     # Тесты management-команд
-    ├── test_models.py       # Тесты моделей
-    └── test_views.py        # Тесты представлений
+│       └── diary.css                   # стили проекта
 ```
 
 ---
@@ -194,18 +227,21 @@ pip install -r requirements/dev.txt
 pytest -v
 
 # модели
-pytest tests/test_models.py -v
+pytest diary/tests/test_models.py -v
 
 # вьюхи  
-pytest tests/test_views.py -v
+pytest diary/tests/test_views.py -v
 
 # функции админки
-pytest tests/test_admin.py -v
+pytest diary/tests/test_admin.py -v
 
 #кастомная команда
-pytest tests/test_commands.py -v
+pytest diary/tests/test_commands.py -v
+
+#тестирование логирования
+pytest diary/tests/test_tasks_logging.py
 
 # один класс
-pytest tests/test_models.py::TestBookCreate -v
+pytest diary/tests/test_models.py::TestBookCreate -v
 ```
 ---

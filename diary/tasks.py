@@ -27,9 +27,7 @@ def log_book_created(self, book_id: int, title: str, author: str, pages: int) ->
     """
     try:
         message = (
-            f"[СОЗДАНА] Книга #{book_id} | "
-            f"«{title}» — {author} | "
-            f"{pages} стр."
+            f"[СОЗДАНА] Книга #{book_id} | " f"«{title}» — {author} | " f"{pages} стр."
         )
         logger.info(message)
         return message
