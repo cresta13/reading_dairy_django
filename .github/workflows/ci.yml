@@ -2,9 +2,9 @@ name: CI HW12 GitHub Actions
 
 on:
   push:
-    branches: [ main, HW12-GitHub_Actions ]
+    branches: [ main, HW12-GitHub-Actions ]
   pull_request:
-    branches: [ main, HW12-GitHub_Actions ]
+    branches: [ main, HW12-GitHub-Actions ]
 
 jobs:
   test:
