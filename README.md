@@ -1,3 +1,7 @@
+[![CI](https://github.com/cresta13/reading_dairy_django/actions/workflows/ci.yml/badge.svg)](https://github.com/cresta13/reading_dairy_django/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/cresta13/reading_dairy_django/badge.svg?branch=main)](https://coveralls.io/github/cresta13/reading_dairy_django?branch=main)
+
+# 📖 Читательский дневник — Django
 # 📖 Читательский дневник
 
 Веб-приложение для ведения личного читательского дневника.
